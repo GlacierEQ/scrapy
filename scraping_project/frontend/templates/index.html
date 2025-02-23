@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+        }
+        .tab.active {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            margin-bottom: -2px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="url"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-container {
+            display: none;
+        }
+        .form-container.active {
+            display: block;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .preview {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Scraper</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showForm('jefs')">Hawaii JEFS Scraper</button>
+            <button class="tab" onclick="showForm('general')">General Web Scraper</button>
+        </div>
+        
+        <div id="jefsForm" class="form-container active">
+            <form id="scrapeJefsForm" onsubmit="handleJefsSubmit(event)">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit">Login and Scrape JEFS</button>
+            </form>
+        </div>
+        
+        <div id="generalForm" class="form-container">
+            <form id="scrapeGeneralForm" onsubmit="handleGeneralSubmit(event)">
+                <div class="form-group">
+                    <label for="url">Website URL:</label>
+                    <input type="url" id="url" name="url" required placeholder="https://example.com">
+                </div>
+                
+                <button type="submit">Capture Webpage</button>
+            </form>
+        </div>
+        
+        <div id="loading" class="loading">
+            Scraping in progress... Please wait...
+        </div>
+        
+        <div id="status"></div>
+        
+        <div id="preview" class="preview">
+            <h3>Preview:</h3>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function showForm(formType) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            document.querySelectorAll('.form-container').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(formType + 'Form').classList.add('active');
+            
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('preview').style.display = 'none';
+        }
+
+        async function handleJefsSubmit(event) {
+            event.preventDefault();
+            await handleSubmit(event.target, '/scrape');
+        }
+
+        async function handleGeneralSubmit(event) {
+            event.preventDefault();
+            await handleSubmit(event.target, '/scrape_general');
+        }
+
+        async function handleSubmit(form, endpoint) {
+            const statusDiv = document.getElementById('status');
+            const loadingDiv = document.getElementById('loading');
+            const previewDiv = document.getElementById('preview');
+            const previewContent = document.getElementById('previewContent');
+            
+            statusDiv.style.display = 'none';
+            previewDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                loadingDiv.style.display = 'none';
+                
+                statusDiv.style.display = 'block';
+                statusDiv.className = result.success ? 'success' : 'error';
+                statusDiv.textContent = result.message;
+                
+                if (result.success && result.data) {
+                    if (result.data.screenshot_path) {
+                        previewDiv.style.display = 'block';
+                        previewContent.innerHTML = `
+                            <p>Screenshot saved to: ${result.data.screenshot_path}</p>
+                            <p>HTML saved to: ${result.data.html_path}</p>
+                            <img src="/screenshots/${result.data.timestamp}/screenshot.png" alt="Page Screenshot">
+                        `;
+                    }
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'An error occurred while scraping. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
