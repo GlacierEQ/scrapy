@@ -1,0 +1,55 @@
+{
+    "scraper_settings": {
+        "headless": true,
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+        "timeout": 30,
+        "stealth_mode": true,
+        "retry_attempts": 3,
+        "retry_delay": 2,
+        "request_interval": 1.5
+    },
+    "memory_settings": {
+        "warning_threshold": 70,
+        "critical_threshold": 85,
+        "enable_memory_mapping": true,
+        "chunk_size": 10,
+        "temp_dir": "temp"
+    },
+    "demo_sites": [
+        {
+            "name": "Books To Scrape",
+            "url": "http://books.toscrape.com/",
+            "category": "http://books.toscrape.com/catalogue/category/books/science_22/index.html",
+            "product_patterns": [
+                "/catalogue/",
+                "index.html"
+            ],
+            "max_products": 50
+        },
+        {
+            "name": "Demo Ecommerce",
+            "url": "https://webscraper.io/test-sites/e-commerce/allinone",
+            "category": "https://webscraper.io/test-sites/e-commerce/allinone/computers",
+            "product_patterns": [
+                "/product/"
+            ],
+            "max_products": 50
+        }
+    ],
+    "export_settings": {
+        "formats": [
+            "json",
+            "csv",
+            "xlsx"
+        ],
+        "compress_results": false,
+        "save_screenshots": true
+    },
+    "visualization_settings": {
+        "generate_wordcloud": true,
+        "generate_price_chart": true,
+        "generate_brand_chart": true,
+        "interactive_dashboard": true,
+        "color_palette": "viridis"
+    }
+}
